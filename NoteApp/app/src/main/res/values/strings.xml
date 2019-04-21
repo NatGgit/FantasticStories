@@ -1,0 +1,9 @@
+<resources>
+    <string name="app_name">NoteApp</string>
+    <string name="note_text_view">this will be a note</string>
+    <string name="new_note_button">new note</string>
+    <string name="delete_note_button">delete</string>
+    <string name="go_back_button">back</string>
+    <string name="save_button">save</string>
+    <string name="enter_note_hint_text">Enter your note here</string>
+</resources>
