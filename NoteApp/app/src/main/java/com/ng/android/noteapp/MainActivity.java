@@ -3,12 +3,20 @@ package com.ng.android.noteapp;
 import android.content.Intent;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.support.v7.widget.DividerItemDecoration;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.view.View;
 import android.widget.Button;
 
+import androidx.recyclerview.selection.OnItemActivatedListener;
+import androidx.recyclerview.selection.SelectionTracker;
+import androidx.recyclerview.selection.StableIdKeyProvider;
+import androidx.recyclerview.selection.StorageStrategy;
+
 public class MainActivity extends AppCompatActivity {
+    private SelectionTracker mySelectionTracker;
+    private OnItemActivatedListener myOnItemActivatedListener;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -18,12 +26,26 @@ public class MainActivity extends AppCompatActivity {
         RecyclerView notesRecyclerView = findViewById(R.id.recycler_view);
         RecyclerView.LayoutManager layoutManager = new LinearLayoutManager(this);
         notesRecyclerView.setLayoutManager(layoutManager);
+
         MyAdapter myAdapter = new MyAdapter(AllNotes.notesArrayList);
-
         notesRecyclerView.setAdapter(myAdapter);
-        notesRecyclerView.setHasFixedSize(true);
+        myAdapter.setHasStableIds(true);
+        myAdapter.setSelectionTracker(mySelectionTracker);
 
-        // still need to set a method working like setOnClickListener (which does not apply to RecyclerView)
+        DividerItemDecoration myDivider = new DividerItemDecoration(notesRecyclerView.getContext(), ((LinearLayoutManager) layoutManager).getOrientation());
+        notesRecyclerView.addItemDecoration(myDivider);
+
+        mySelectionTracker = new SelectionTracker.Builder<>("mySelection",
+                notesRecyclerView,
+                new StableIdKeyProvider(notesRecyclerView),
+                new MyAdapter.MyDetailsLookup(notesRecyclerView),
+                StorageStrategy.createLongStorage())
+                .withOnItemActivatedListener(myOnItemActivatedListener)
+                .build();
+
+        if (savedInstanceState != null){
+            mySelectionTracker.onRestoreInstanceState(savedInstanceState);
+        }
 
         Button addNoteButton = findViewById(R.id.add_note_button);
         addNoteButton.setOnClickListener(new View.OnClickListener() {
@@ -34,6 +56,13 @@ public class MainActivity extends AppCompatActivity {
                 startActivity(addNoteActivityIntent);
             }
         });
+
+        myAdapter.notifyDataSetChanged();
+    }
+
+    protected void onSaveInstanceState(Bundle outState) {
+        super.onSaveInstanceState(outState);
+        mySelectionTracker.onSaveInstanceState(outState);
     }
 }
 
