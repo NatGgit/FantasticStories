@@ -13,8 +13,12 @@ public class ReadNoteActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.read_note_layout);
 
-        TextView noteText = findViewById(R.id.note_text_view);
-        // not yet set
+        Intent receiveNoteIntent = getIntent();
+        String receivedNote = receiveNoteIntent.getExtras().getString("sending_note");
+
+        TextView receivedNoteText = findViewById(R.id.note_text_view);
+        receivedNoteText.append(receivedNote);
+
 
         Button backButton = findViewById(R.id.go_back_button);
         backButton.setOnClickListener(new View.OnClickListener() {

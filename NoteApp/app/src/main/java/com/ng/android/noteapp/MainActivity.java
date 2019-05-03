@@ -9,28 +9,28 @@ import android.support.v7.widget.RecyclerView;
 import android.view.View;
 import android.widget.Button;
 
-import androidx.recyclerview.selection.OnItemActivatedListener;
 import androidx.recyclerview.selection.SelectionTracker;
 import androidx.recyclerview.selection.StableIdKeyProvider;
 import androidx.recyclerview.selection.StorageStrategy;
 
+
 public class MainActivity extends AppCompatActivity {
-    private SelectionTracker mySelectionTracker;
-    private OnItemActivatedListener myOnItemActivatedListener;
+    private SelectionTracker<Long> mySelectionTracker;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+        // would it be better to set all this as another metod, lets say "setRecyclerView"?
         RecyclerView notesRecyclerView = findViewById(R.id.recycler_view);
         RecyclerView.LayoutManager layoutManager = new LinearLayoutManager(this);
         notesRecyclerView.setLayoutManager(layoutManager);
 
-        MyAdapter myAdapter = new MyAdapter(AllNotes.notesArrayList);
-        notesRecyclerView.setAdapter(myAdapter);
+        MyAdapter myAdapter = new MyAdapter(AllNotes.notesArrayList, this);
         myAdapter.setHasStableIds(true);
         myAdapter.setSelectionTracker(mySelectionTracker);
+        notesRecyclerView.setAdapter(myAdapter);
 
         DividerItemDecoration myDivider = new DividerItemDecoration(notesRecyclerView.getContext(), ((LinearLayoutManager) layoutManager).getOrientation());
         notesRecyclerView.addItemDecoration(myDivider);
@@ -40,12 +40,22 @@ public class MainActivity extends AppCompatActivity {
                 new StableIdKeyProvider(notesRecyclerView),
                 new MyAdapter.MyDetailsLookup(notesRecyclerView),
                 StorageStrategy.createLongStorage())
-                .withOnItemActivatedListener(myOnItemActivatedListener)
                 .build();
 
         if (savedInstanceState != null){
             mySelectionTracker.onRestoreInstanceState(savedInstanceState);
         }
+
+
+
+        // should I add an Observer?
+//        mySelectionTracker.addObserver(SelectionTracker.SelectionObserver<Long>(){
+//            @Override
+//            public void onSelectionChanged(){
+//                super.onSelectionChanged();
+//            }
+//        }
+//        );
 
         Button addNoteButton = findViewById(R.id.add_note_button);
         addNoteButton.setOnClickListener(new View.OnClickListener() {
@@ -64,5 +74,6 @@ public class MainActivity extends AppCompatActivity {
         super.onSaveInstanceState(outState);
         mySelectionTracker.onSaveInstanceState(outState);
     }
+
 }
 

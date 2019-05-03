@@ -21,9 +21,9 @@ public class MyAdapter extends RecyclerView.Adapter<MyAdapter.MyViewHolder> {
     private SelectionTracker<Long> mySelectionTracker;
     private Context myContext;
 
-
-    public MyAdapter(ArrayList<String> myArrayList) {
+    public MyAdapter(ArrayList<String> myArrayList, Context myContext) {
         this.myArrayList = myArrayList;
+        this.myContext = myContext;
     }
 
     public void setSelectionTracker(
@@ -31,8 +31,56 @@ public class MyAdapter extends RecyclerView.Adapter<MyAdapter.MyViewHolder> {
         this.mySelectionTracker = mySelectionTracker;
     }
 
-    static class MyDetailsLookup extends ItemDetailsLookup<Long> {
+    @Override
+    public MyAdapter.MyViewHolder onCreateViewHolder(ViewGroup parent,
+                                                     int viewType) {
+        View rowView = LayoutInflater.from(parent.getContext())
+                .inflate(R.layout.row_note_list_layout, parent, false);
+        MyViewHolder viewHolder = new MyViewHolder(rowView);
+        return viewHolder;
+    }
 
+    @Override
+    public void onBindViewHolder(MyViewHolder holder, int position) {
+        holder.textView.setText(myArrayList.get(position));
+        holder.details.position = position;
+        this.myContext = holder.textView.getContext();
+    }
+
+    @Override
+    public int getItemCount() {
+        return myArrayList.size();
+    }
+
+
+
+    private class Details extends ItemDetailsLookup.ItemDetails<Long> {
+        long position;
+
+        // apparently not used
+        public void setPosition(long position){
+            this.position = position;
+        }
+
+        @Override
+        public int getPosition() {
+            return (int) position;
+        }
+
+        @Nullable
+        @Override
+        public Long getSelectionKey() {
+            return position;
+        }
+
+        //should I add it?
+        @Override
+        public boolean inSelectionHotspot(MotionEvent event){
+            return true;
+        }
+    }
+
+    static class MyDetailsLookup extends ItemDetailsLookup<Long> {
         private RecyclerView myRecyclerView;
 
         MyDetailsLookup(RecyclerView myRecyclerView) {
@@ -46,56 +94,37 @@ public class MyAdapter extends RecyclerView.Adapter<MyAdapter.MyViewHolder> {
             if (view != null) {
                 RecyclerView.ViewHolder viewHolder = myRecyclerView.getChildViewHolder(view);
                 if (viewHolder instanceof MyViewHolder) {
-                    return ((MyViewHolder) viewHolder).getItemDetails(); // I have no clue how to make it work
+                    return ((MyViewHolder) viewHolder).getItemDetails();
                 }
             }
             return null;
         }
     }
 
-    public class MyViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener{
+    public class MyViewHolder extends RecyclerView.ViewHolder {
         public TextView textView;
-        public MyViewHolder(View v) {
-            super(v);
-            textView = v.findViewById(R.id.my_text_view);
-            v.setOnClickListener(this);
+        public Details details;
+
+        public MyViewHolder(View view) {
+            super(view);
+            textView = view.findViewById(R.id.my_text_view);
+            details = new Details();
+            view.setOnClickListener(new View.OnClickListener(){
+                @Override
+                public void onClick(View view) {
+                    Intent sentNoteIntent = new Intent(myContext,
+                            ReadNoteActivity.class);
+                    sentNoteIntent.putExtra("sending_note", mySelectionTracker.getSelection().toString());
+                    myContext.startActivity(sentNoteIntent);
+                }
+            });
         }
-        @Override
-        public void onClick(View view) {
-                Intent addReadActivityIntent = new Intent(myContext,
-                        ReadNoteActivity.class);
-                myContext.startActivity(addReadActivityIntent);
-            }
+
+        public ItemDetailsLookup.ItemDetails<Long> getItemDetails() {
+            return details;
         }
-
-    @Override
-    public MyAdapter.MyViewHolder onCreateViewHolder(ViewGroup parent,
-                                                     int viewType) {
-        View v = LayoutInflater.from(parent.getContext())
-                .inflate(R.layout.my_adapter_layout, parent, false);
-        MyViewHolder vh = new MyViewHolder(v);
-        return vh;
     }
 
-    @Override
-    public void onBindViewHolder(MyViewHolder holder, int position) {
-        holder.textView.setText(myArrayList.get(position));
-    }
-
-    @Override
-    public int getItemCount() {
-        return myArrayList.size();
-    }
-
-    @Override
-    public long getItemId(int position) {
-        for(String note : myArrayList) {
-            if(myArrayList.get(position).equals(note)) {
-                return position;
-            }
-        }
-        return -1;
-    }
 }
 
 
