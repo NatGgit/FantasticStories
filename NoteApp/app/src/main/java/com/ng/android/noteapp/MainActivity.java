@@ -15,65 +15,53 @@ import androidx.recyclerview.selection.StorageStrategy;
 
 
 public class MainActivity extends AppCompatActivity {
-    private SelectionTracker<Long> mySelectionTracker;
+    private SelectionTracker<Long> notesSelectionTracker;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        // would it be better to set all this as another metod, lets say "setRecyclerView"?
         RecyclerView notesRecyclerView = findViewById(R.id.recycler_view);
         RecyclerView.LayoutManager layoutManager = new LinearLayoutManager(this);
         notesRecyclerView.setLayoutManager(layoutManager);
 
-        MyAdapter myAdapter = new MyAdapter(AllNotes.notesArrayList, this);
-        myAdapter.setHasStableIds(true);
-        myAdapter.setSelectionTracker(mySelectionTracker);
-        notesRecyclerView.setAdapter(myAdapter);
+        NotesAdapter notesAdapter = new NotesAdapter(AllNotes.notesArrayList, this);
+        notesAdapter.setHasStableIds(true);
+        notesRecyclerView.setAdapter(notesAdapter);
 
-        DividerItemDecoration myDivider = new DividerItemDecoration(notesRecyclerView.getContext(), ((LinearLayoutManager) layoutManager).getOrientation());
-        notesRecyclerView.addItemDecoration(myDivider);
+        DividerItemDecoration notesDivider = new DividerItemDecoration(notesRecyclerView.getContext(), ((LinearLayoutManager) layoutManager).getOrientation());
+        notesRecyclerView.addItemDecoration(notesDivider);
 
-        mySelectionTracker = new SelectionTracker.Builder<>("mySelection",
+        notesSelectionTracker = new SelectionTracker.Builder<>("mySelection",
                 notesRecyclerView,
                 new StableIdKeyProvider(notesRecyclerView),
-                new MyAdapter.MyDetailsLookup(notesRecyclerView),
+                new NotesAdapter.NoteDetailsLookup(notesRecyclerView),
                 StorageStrategy.createLongStorage())
                 .build();
 
-        if (savedInstanceState != null){
-            mySelectionTracker.onRestoreInstanceState(savedInstanceState);
+        notesAdapter.setSelectionTracker(notesSelectionTracker);
+
+        if (savedInstanceState != null) {
+            notesSelectionTracker.onRestoreInstanceState(savedInstanceState);
         }
-
-
-
-        // should I add an Observer?
-//        mySelectionTracker.addObserver(SelectionTracker.SelectionObserver<Long>(){
-//            @Override
-//            public void onSelectionChanged(){
-//                super.onSelectionChanged();
-//            }
-//        }
-//        );
 
         Button addNoteButton = findViewById(R.id.add_note_button);
         addNoteButton.setOnClickListener(new View.OnClickListener() {
             @Override
-            public void onClick(View view){
+            public void onClick(View view) {
                 Intent addNoteActivityIntent = new Intent(MainActivity.this,
                         AddNoteActivity.class);
                 startActivity(addNoteActivityIntent);
             }
         });
 
-        myAdapter.notifyDataSetChanged();
+        notesAdapter.notifyDataSetChanged();
     }
 
     protected void onSaveInstanceState(Bundle outState) {
         super.onSaveInstanceState(outState);
-        mySelectionTracker.onSaveInstanceState(outState);
+        notesSelectionTracker.onSaveInstanceState(outState);
     }
-
 }
 

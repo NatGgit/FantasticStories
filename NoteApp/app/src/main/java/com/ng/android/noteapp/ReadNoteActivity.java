@@ -14,11 +14,10 @@ public class ReadNoteActivity extends AppCompatActivity {
         setContentView(R.layout.read_note_layout);
 
         Intent receiveNoteIntent = getIntent();
-        String receivedNote = receiveNoteIntent.getExtras().getString("sending_note");
+        final String receivedNote = receiveNoteIntent.getExtras().getString("sending_note");
 
-        TextView receivedNoteText = findViewById(R.id.note_text_view);
-        receivedNoteText.append(receivedNote);
-
+        final TextView receivedNoteTextView = findViewById(R.id.note_text_view);
+        receivedNoteTextView.append(receivedNote);
 
         Button backButton = findViewById(R.id.go_back_button);
         backButton.setOnClickListener(new View.OnClickListener() {
@@ -34,7 +33,13 @@ public class ReadNoteActivity extends AppCompatActivity {
         deleteButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                // not yet set
+                for(int i = 0; i < AllNotes.notesArrayList.size(); i++) {
+                    if (receivedNote.equals(AllNotes.notesArrayList.get(i))) {
+                        AllNotes.notesArrayList.remove(i);
+                        break; // allows to remove only one note in case there would be al least 2 identical ones
+                    }
+                }
+            receivedNoteTextView.setText("");
             }
         });
     }

@@ -2,7 +2,7 @@ package com.ng.android.noteapp;
 
 import java.util.ArrayList;
 
-public class AllNotes { // should I implement Serializable//
+public class AllNotes {
 
     public static ArrayList<String> notesArrayList = new ArrayList<>();
 
