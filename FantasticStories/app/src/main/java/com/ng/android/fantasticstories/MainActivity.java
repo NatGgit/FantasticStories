@@ -19,7 +19,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        DataBaseHelper fsDataBaseHelper = new DataBaseHelper(this);
+        DataBaseHelper dataBaseHelper = new DataBaseHelper(this);
 
         //sets the issueListButton and allows it to be clickable
         Button issueListButton = findViewById(R.id.look_through_issues_button);

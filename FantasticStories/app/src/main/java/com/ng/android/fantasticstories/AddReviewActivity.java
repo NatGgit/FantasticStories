@@ -1,6 +1,5 @@
 package com.ng.android.fantasticstories;
 
-import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
@@ -11,13 +10,16 @@ import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Spinner;
+import android.widget.Toast;
 
 public class AddReviewActivity extends AppCompatActivity implements AdapterView.OnItemSelectedListener {
     DataBaseHelper dataBaseHelper = new DataBaseHelper(this);
 
+
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        setContentView(R.layout.add_review_layout);
 
         Spinner chooseYearSpinner = findViewById(R.id.add_review_year_spinner);
         ArrayAdapter<CharSequence> yearSpinnerAdapter = ArrayAdapter.createFromResource(this,
@@ -39,6 +41,8 @@ public class AddReviewActivity extends AppCompatActivity implements AdapterView.
         // Applies the OnItemSelectedListener to the spinner
         chooseIssueSpinner.setOnItemSelectedListener(this);
 
+        final EditText ratingEditText = findViewById(R.id.add_review_rating_edit_text);
+
         Spinner chooseStorySpinner = findViewById(R.id.add_review_title_and_author_spinner);
         ArrayAdapter<CharSequence> storySpinnerAdapter = ArrayAdapter.createFromResource(this,
                 R.array.year_spinner_array, android.R.layout.simple_spinner_item);
@@ -50,7 +54,7 @@ public class AddReviewActivity extends AppCompatActivity implements AdapterView.
         chooseStorySpinner.setOnItemSelectedListener(this);
 
         final EditText reviewTitleEditText =  findViewById(R.id.add_review_review_title_edit_text);
-        final EditText ratingEditText = findViewById(R.id.add_review_rating_edit_text);
+
         final EditText reviewEditText = findViewById(R.id.add_review_edit_text);
 
         //sets the saveButton and allows it to be clickable
@@ -58,13 +62,28 @@ public class AddReviewActivity extends AppCompatActivity implements AdapterView.
         saveButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                //saves data (2 Strings and 1 int) from 3 EditTexts to the database by calling addReview method from
-                // DataBaseHelper class
+                //collects data from 3 EditTexts as Strings
                 String newTitle = reviewTitleEditText.getText().toString();
-                String newRating = ratingEditText.getText().toString();
-                int newRatingToInt = Integer.parseInt(newRating);
                 String newReview = reviewEditText.getText().toString();
-                dataBaseHelper.addReview(newRatingToInt, newTitle, newReview);
+                String newRating = ratingEditText.getText().toString();
+                //checks if user has entered a value into the rating editText. If no, it sets this
+                // editText value to 0 (in order to avoid an exception while changing string to int
+                // in the line that follows
+                if ("".equals(newRating)){
+                    newRating = "0";
+                }
+                //converts String from Rating EditText to an int
+                int newRatingToInt = Integer.parseInt(newRating);
+                // saves data to the database by calling addReview method from DataBaseHelper class
+                boolean insertData = dataBaseHelper.addReview(newRatingToInt, newTitle, newReview);
+                //shows a short message (aka Toast) confirming that the review was saved
+                if (insertData) {
+                    Toast.makeText(AddReviewActivity.this, "Your review has been saved",
+                            Toast.LENGTH_SHORT).show();
+                } else {
+                    Toast.makeText(AddReviewActivity.this, "An error occured, please try again",
+                            Toast.LENGTH_SHORT).show();
+                }
             }
         });
 

@@ -6,7 +6,6 @@ import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteException;
 import android.database.sqlite.SQLiteOpenHelper;
-import android.util.Log;
 
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -139,21 +138,33 @@ public class DataBaseHelper extends SQLiteOpenHelper {
     // You could return cursors by doing "return myDataBase.query(....)" so it'd be easy
     // to you to create adapters for your views.
 
-    public void addReview (int rating, String reviewTitle, String reviewText) {
+    public boolean addReview (int rating, String reviewTitle, String reviewText) {
+        //gets the time of creation of a review from the system and saves it as a string
         Date creationDate = new Date();
         DateFormat dateFormat = DateFormat.getDateTimeInstance();
         String creationDateString = dateFormat.format(creationDate);
 
-        SQLiteDatabase storiesAndReviewsDataBase = getWritableDatabase();
+        SQLiteDatabase fantasticStoriesDataBase = this.getWritableDatabase();
         ContentValues valuesToInsert = new ContentValues();
         valuesToInsert.put(EIGHTH_COLUMN_NAME, rating);
         valuesToInsert.put(NINTH_COLUMN_NAME, creationDateString);
         valuesToInsert.put(TENTH_COLUMN_NAME, reviewTitle);
         valuesToInsert.put(ELEVENTH_COLUMN_NAME, reviewText);
+        long result = fantasticStoriesDataBase.insert(TABLE_NAME, null, valuesToInsert);
 
-        Log.d(TAG, "addData: Adding rating " + rating + " title " + reviewTitle + " text "
-                + reviewText + TABLE_NAME );
+        // if data was inserted incorrectly it wil return -1
+        if (result == -1){
+            return false;
+        } else{
+            return true;
+        }
     }
 
-//    public Cursor getStoryData
+    //gets all the data from the database
+    public Cursor getStoryData(){
+        SQLiteDatabase fantasticStoriesDataBase = this.getWritableDatabase();
+        String query = "SELECT * FROM " + TABLE_NAME;
+        Cursor data = fantasticStoriesDataBase.rawQuery(query, null);
+        return data;
+    }
 }

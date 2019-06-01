@@ -8,7 +8,7 @@
     <string name="save_button">save</string>
     <string name="quit_button">quit</string>
     <string name="your_review_hint">Your review</string>
-    <string name="your_review_title_hint">Your review title</string>
+    <string name="your_review_title_hint">Your review title </string>
     <string name="rating_hint">Rate the story from 0 to 10</string>
     <string-array name="main_spinner_array">
         <item>recently written</item>
