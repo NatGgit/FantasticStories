@@ -9,7 +9,7 @@
     <string name="quit_button">quit</string>
     <string name="your_review_hint">Your review</string>
     <string name="your_review_title_hint">Your review title </string>
-    <string name="rating_hint">Rate the story from 0 to 10</string>
+    <string name="rating_text_view">Rate the story:</string>
     <string-array name="main_spinner_array">
         <item>recently written</item>
         <item>oldest</item>
@@ -57,5 +57,18 @@
         <item>1984</item>
         <item>1983</item>
         <item>1982</item>
+    </string-array>
+    <string-array name="rating_spinner_array">
+        <item>0</item>
+        <item>1</item>
+        <item>2</item>
+        <item>3</item>
+        <item>4</item>
+        <item>5</item>
+        <item>6</item>
+        <item>7</item>
+        <item>8</item>
+        <item>9</item>
+        <item>10</item>
     </string-array>
 </resources>

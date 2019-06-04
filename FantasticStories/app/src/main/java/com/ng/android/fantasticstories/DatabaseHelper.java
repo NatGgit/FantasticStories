@@ -6,6 +6,7 @@ import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteException;
 import android.database.sqlite.SQLiteOpenHelper;
+import android.util.Log;
 
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -18,24 +19,23 @@ public class DataBaseHelper extends SQLiteOpenHelper {
 
     //The Android's default system path to application database.
     private static final String DB_PATH = "/data/data/com.ng.android.fantasticstories/databases/";
-    private static final String DB_NAME = "FSdatabase.db";
+    private static final String DB_NAME = "FS_database.db";
 
-    // potrzebowałabym tych nazw, gdybym sama tworzyła tabelę. ale co jeśli importuję tabelę?
-    // jak mam pobrać nazwy kolumn?
+    // that's the list of columns in the table
     private final String TAG = "DataBaseHelper";
     private final String TABLE_NAME = "Reviews";
     private final String ZERO_COLUMN_NAME = "_id";
     private final String FIRST_COLUMN_NAME = "Year";
     private final String SECOND_COLUMN_NAME = "Issue";
-    private final String THIRD_COLUMN_NAME = "Story Author's First Name";
-    private final String FORTH_COLUMN_NAME = "Story Author's Surname";
-    private final String FIFTH_COLUMN_NAME = "Story Title";
-    private final String SIXTH_COLUMN_NAME = "Story Original Title";
-    private final String SEVENTH_COLUMN_NAME = "Origial Language";
+    private final String THIRD_COLUMN_NAME = "StoryAuthorFirstName";
+    private final String FORTH_COLUMN_NAME = "StoryAuthorSurname";
+    private final String FIFTH_COLUMN_NAME = "StoryTitle";
+    private final String SIXTH_COLUMN_NAME = "StoryOriginalTitle";
+    private final String SEVENTH_COLUMN_NAME = "OriginalLanguage";
     private final String EIGHTH_COLUMN_NAME = "Rating";
-    private final String NINTH_COLUMN_NAME = "Review Creation Date";
-    private final String TENTH_COLUMN_NAME = "Review Title";
-    private final String ELEVENTH_COLUMN_NAME = "Review Text";
+    private final String NINTH_COLUMN_NAME = "ReviewCreationDate";
+    private final String TENTH_COLUMN_NAME = "ReviewTitle";
+    private final String ELEVENTH_COLUMN_NAME = "ReviewText";
 
     private SQLiteDatabase fantasticStoriesDataBase;
     private final Context context;
@@ -47,7 +47,7 @@ public class DataBaseHelper extends SQLiteOpenHelper {
      * @param context
      */
     public DataBaseHelper(Context context) {
-        super(context, DB_NAME, null, 1);
+        super(context, DB_NAME,null, 1);
         this.context = context;
     }
 
@@ -57,7 +57,7 @@ public class DataBaseHelper extends SQLiteOpenHelper {
     public void createDataBase() throws IOException {
         boolean dbExist = checkDataBase();
         if(dbExist){
-            //do nothing - database already exist
+            //does nothing - database already exist
         }else{
             //By calling this method and empty database will be created into the default system path
             //of the application so we are gonna be able to overwrite that database with our database.
@@ -95,28 +95,28 @@ public class DataBaseHelper extends SQLiteOpenHelper {
      * This is done by transfering bytestream.
      * */
     private void copyDataBase() throws IOException{
-        //Open your local db as the input stream
+        //Opens the local database as the input stream
         InputStream myInput = context.getAssets().open(DB_NAME);
-        // Path to the just created empty db
+        // Path to the just created empty database
         String outFileName = DB_PATH + DB_NAME;
-        //Open the empty db as the output stream
+        //Opens the empty db as the output stream
         OutputStream myOutput = new FileOutputStream(outFileName);
-        //transfer bytes from the inputfile to the outputfile
+        //transfers bytes from the inputfile to the outputfile
         byte[] buffer = new byte[1024];
         int length;
         while ((length = myInput.read(buffer))>0){
             myOutput.write(buffer, 0, length);
         }
-        //Close the streams
+        //Closes the streams
         myOutput.flush();
         myOutput.close();
         myInput.close();
     }
 
     public void openDataBase() throws SQLiteException{
-        //Open the database
+        //Opens the database
         String myPath = DB_PATH + DB_NAME;
-        fantasticStoriesDataBase = SQLiteDatabase.openDatabase(myPath, null, SQLiteDatabase.OPEN_READONLY);
+        fantasticStoriesDataBase = SQLiteDatabase.openDatabase(myPath,null, SQLiteDatabase.OPEN_READONLY);
     }
 
     @Override
@@ -139,7 +139,7 @@ public class DataBaseHelper extends SQLiteOpenHelper {
     // to you to create adapters for your views.
 
     public boolean addReview (int rating, String reviewTitle, String reviewText) {
-        //gets the time of creation of a review from the system and saves it as a string
+        //gets the time of creation of the review from the system and saves it as a string
         Date creationDate = new Date();
         DateFormat dateFormat = DateFormat.getDateTimeInstance();
         String creationDateString = dateFormat.format(creationDate);
@@ -150,20 +150,30 @@ public class DataBaseHelper extends SQLiteOpenHelper {
         valuesToInsert.put(NINTH_COLUMN_NAME, creationDateString);
         valuesToInsert.put(TENTH_COLUMN_NAME, reviewTitle);
         valuesToInsert.put(ELEVENTH_COLUMN_NAME, reviewText);
-        long result = fantasticStoriesDataBase.insert(TABLE_NAME, null, valuesToInsert);
+        long result = fantasticStoriesDataBase.insert(TABLE_NAME,null, valuesToInsert);
 
         // if data was inserted incorrectly it wil return -1
         if (result == -1){
             return false;
         } else{
+            Log.d(TAG, "addData: Adding rating " + rating + " title " + reviewTitle + " text "
+                    + reviewText + TABLE_NAME );
             return true;
         }
     }
 
     //gets all the data from the database
-    public Cursor getStoryData(){
+    public Cursor getallStoryData(){
         SQLiteDatabase fantasticStoriesDataBase = this.getWritableDatabase();
         String query = "SELECT * FROM " + TABLE_NAME;
+        Cursor data = fantasticStoriesDataBase.rawQuery(query, null);
+        return data;
+    }
+
+    //gets the issue numbers from a specific year from the database
+    public Cursor getIssueNumbers (String chosenYear){
+        SQLiteDatabase fantasticStoriesDataBase = this.getWritableDatabase();
+        String query = "SELECT " + SECOND_COLUMN_NAME + " FROM " + TABLE_NAME + " WHERE " + FIRST_COLUMN_NAME + " = " + chosenYear;
         Cursor data = fantasticStoriesDataBase.rawQuery(query, null);
         return data;
     }

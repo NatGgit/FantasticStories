@@ -9,18 +9,20 @@ import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.SimpleCursorAdapter;
 import android.widget.Spinner;
+import android.widget.TextView;
 import android.widget.Toast;
 
 public class AddReviewActivity extends AppCompatActivity implements AdapterView.OnItemSelectedListener {
     DataBaseHelper dataBaseHelper = new DataBaseHelper(this);
-
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.add_review_layout);
 
+        // This spinner uses the array of years from the app resources
         Spinner chooseYearSpinner = findViewById(R.id.add_review_year_spinner);
         ArrayAdapter<CharSequence> yearSpinnerAdapter = ArrayAdapter.createFromResource(this,
                 R.array.year_spinner_array, android.R.layout.simple_spinner_item);
@@ -31,9 +33,14 @@ public class AddReviewActivity extends AppCompatActivity implements AdapterView.
         // Applies the OnItemSelectedListener to the spinner
         chooseYearSpinner.setOnItemSelectedListener(this);
 
+        // second spinner uses the issue numbers from a database query according to what year was
+        // chosen in the firs spinner
         Spinner chooseIssueSpinner = findViewById(R.id.add_review_issue_number_spinner);
-        ArrayAdapter<CharSequence> issueSpinnerAdapter = ArrayAdapter.createFromResource(this,
-                R.array.year_spinner_array, android.R.layout.simple_spinner_item);
+        //retrieves the choice from the first spinner as a String
+        String chosenYear = chooseYearSpinner.getSelectedItem().toString();
+        //uses the simple cursor adapter to populate the spinner with the data from the database.
+        SimpleCursorAdapter issueSpinnerAdapter = new SimpleCursorAdapter(AddReviewActivity.this, android.R.layout.simple_spinner_item,
+                dataBaseHelper.getIssueNumbers(chosenYear),new String[]{"Issue"}, new int[]{android.R.id.text1}, 0 );
         // Specifies the layout to use when the list of choices appears
         issueSpinnerAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         // Applies the adapter to the spinner
@@ -41,7 +48,18 @@ public class AddReviewActivity extends AppCompatActivity implements AdapterView.
         // Applies the OnItemSelectedListener to the spinner
         chooseIssueSpinner.setOnItemSelectedListener(this);
 
-        final EditText ratingEditText = findViewById(R.id.add_review_rating_edit_text);
+        final TextView ratingTextView = findViewById(R.id.add_review_rating_text_view);
+
+        // This spinner uses the array of 0-10 ratings from the app resources
+        final Spinner ratingSpinner = findViewById(R.id.add_review_rating_spinner);
+        ArrayAdapter<CharSequence> ratingSpinnerAdapter = ArrayAdapter.createFromResource(this,
+                R.array.rating_spinner_array, android.R.layout.simple_spinner_item);
+        // Specifies the layout to use when the list of choices appears
+        ratingSpinnerAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        // Applies the adapter to the spinner
+        ratingSpinner.setAdapter(ratingSpinnerAdapter);
+        // Applies the OnItemSelectedListener to the spinner
+        ratingSpinner.setOnItemSelectedListener(this);
 
         Spinner chooseStorySpinner = findViewById(R.id.add_review_title_and_author_spinner);
         ArrayAdapter<CharSequence> storySpinnerAdapter = ArrayAdapter.createFromResource(this,
@@ -65,14 +83,7 @@ public class AddReviewActivity extends AppCompatActivity implements AdapterView.
                 //collects data from 3 EditTexts as Strings
                 String newTitle = reviewTitleEditText.getText().toString();
                 String newReview = reviewEditText.getText().toString();
-                String newRating = ratingEditText.getText().toString();
-                //checks if user has entered a value into the rating editText. If no, it sets this
-                // editText value to 0 (in order to avoid an exception while changing string to int
-                // in the line that follows
-                if ("".equals(newRating)){
-                    newRating = "0";
-                }
-                //converts String from Rating EditText to an int
+                String newRating = ratingSpinner.getSelectedItem().toString();
                 int newRatingToInt = Integer.parseInt(newRating);
                 // saves data to the database by calling addReview method from DataBaseHelper class
                 boolean insertData = dataBaseHelper.addReview(newRatingToInt, newTitle, newReview);
@@ -81,7 +92,7 @@ public class AddReviewActivity extends AppCompatActivity implements AdapterView.
                     Toast.makeText(AddReviewActivity.this, "Your review has been saved",
                             Toast.LENGTH_SHORT).show();
                 } else {
-                    Toast.makeText(AddReviewActivity.this, "An error occured, please try again",
+                    Toast.makeText(AddReviewActivity.this, "An error occurred, please try again",
                             Toast.LENGTH_SHORT).show();
                 }
             }
@@ -110,4 +121,5 @@ public class AddReviewActivity extends AppCompatActivity implements AdapterView.
     public void onNothingSelected(AdapterView<?> parent) {
         // Another interface callback
     }
+
 }
