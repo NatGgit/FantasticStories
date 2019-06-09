@@ -13,13 +13,12 @@ import android.widget.Spinner;
 import android.widget.TextView;
 
 public class MainActivity extends AppCompatActivity implements AdapterView.OnItemSelectedListener {
+    public static DatabaseHelper databaseHelper;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-
-        DataBaseHelper dataBaseHelper = new DataBaseHelper(this);
 
         //sets the issueListButton and allows it to be clickable
         Button issueListButton = findViewById(R.id.look_through_issues_button);
@@ -60,7 +59,8 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
         // Applies the OnItemSelectedListener to the spinner
         mainActivitySpinner.setOnItemSelectedListener(this);
 
-
+        // here maybe I should add a fragment with text view "you have no reviews yet" changing to
+        // a fregment with recycler view when at least one review is available
         RecyclerView mainReviewRecyclerView = findViewById(R.id.main_review_recyclerview);
 
         //sets the moreReviewsButton and allows it to be clickable
@@ -86,7 +86,13 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
                 startActivity(addReviewActivityIntent);
             }
         });
+    }
 
+    // databaseHelper needs to be created after the creation of MainActivity, because it has to refer to it
+    @Override
+    protected void onStart() {
+        super.onStart();
+        databaseHelper = new DatabaseHelper(this);
     }
 
     // Allows spinner items to be clickable

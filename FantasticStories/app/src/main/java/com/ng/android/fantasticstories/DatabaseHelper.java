@@ -6,23 +6,24 @@ import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteException;
 import android.database.sqlite.SQLiteOpenHelper;
-import android.util.Log;
 
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.text.DateFormat;
+import java.time.Year;
+import java.util.Calendar;
 import java.util.Date;
 
-public class DataBaseHelper extends SQLiteOpenHelper {
+public class DatabaseHelper extends SQLiteOpenHelper {
 
-    //The Android's default system path to application database.
-    private static final String DB_PATH = "/data/data/com.ng.android.fantasticstories/databases/";
+    private final String DB_PATH;
     private static final String DB_NAME = "FS_database.db";
+    private SQLiteDatabase fantasticDatabase;
+    private final Context context;
 
     // that's the list of columns in the table
-    private final String TAG = "DataBaseHelper";
     private final String TABLE_NAME = "Reviews";
     private final String ZERO_COLUMN_NAME = "_id";
     private final String FIRST_COLUMN_NAME = "Year";
@@ -37,33 +38,39 @@ public class DataBaseHelper extends SQLiteOpenHelper {
     private final String TENTH_COLUMN_NAME = "ReviewTitle";
     private final String ELEVENTH_COLUMN_NAME = "ReviewText";
 
-    private SQLiteDatabase fantasticStoriesDataBase;
-    private final Context context;
-
     /**
      * Constructor
      * Takes and keeps a reference of the passed context in order to access to the application
      * assets and resources.
      * @param context
      */
-    public DataBaseHelper(Context context) {
+    public DatabaseHelper(Context context){
         super(context, DB_NAME,null, 1);
         this.context = context;
+        DB_PATH = context.getFilesDir().getPath();
+        try {
+            copyDatabase();
+        } catch (IOException e){
+            throw new Error("IOException in createDatabase().");
+        }
+        //opens a database after copying it. Otherwise we get a null pointer exception when trying
+        // to operate on it
+        openDatabase();
     }
 
     /**
      * Creates a empty database on the system and rewrites it with your own database.
      * */
-    public void createDataBase() throws IOException {
-        boolean dbExist = checkDataBase();
+    public void copyDatabase() throws IOException {
+        boolean dbExist = checkIfDatabaseExists();
         if(dbExist){
             //does nothing - database already exist
         }else{
-            //By calling this method and empty database will be created into the default system path
+            //By calling this method an empty database will be created into the default system path
             //of the application so we are gonna be able to overwrite that database with our database.
-            this.getReadableDatabase();
+            this.getWritableDatabase();
             try {
-                copyDataBase();
+                copyDatabaseFile();
             } catch (IOException e) {
                 throw new Error("Error copying database");
             }
@@ -75,18 +82,18 @@ public class DataBaseHelper extends SQLiteOpenHelper {
      * application.
      * @return true if it exists, false if it doesn't
      */
-    private boolean checkDataBase(){
-        SQLiteDatabase checkDB = null;
+    private boolean checkIfDatabaseExists(){
+        SQLiteDatabase fantasticDataBase = null;
         try{
             String myPath = DB_PATH + DB_NAME;
-            checkDB = SQLiteDatabase.openDatabase(myPath, null, SQLiteDatabase.OPEN_READONLY);
+            fantasticDataBase = SQLiteDatabase.openDatabase(myPath, null, SQLiteDatabase.OPEN_READONLY);
         }catch(SQLiteException e){
             //database does't exist yet.
         }
-        if(checkDB != null){
-            checkDB.close();
+        if(fantasticDataBase != null){
+            fantasticDataBase.close();
         }
-        return checkDB != null ? true : false;
+        return fantasticDataBase != null ? true : false;
     }
 
     /**
@@ -94,14 +101,14 @@ public class DataBaseHelper extends SQLiteOpenHelper {
      * system folder, from where it can be accessed and handled.
      * This is done by transfering bytestream.
      * */
-    private void copyDataBase() throws IOException{
+    private void copyDatabaseFile() throws IOException{
         //Opens the local database as the input stream
         InputStream myInput = context.getAssets().open(DB_NAME);
         // Path to the just created empty database
         String outFileName = DB_PATH + DB_NAME;
         //Opens the empty db as the output stream
         OutputStream myOutput = new FileOutputStream(outFileName);
-        //transfers bytes from the inputfile to the outputfile
+        //transfers bytes from the input file to the output file
         byte[] buffer = new byte[1024];
         int length;
         while ((length = myInput.read(buffer))>0){
@@ -113,17 +120,17 @@ public class DataBaseHelper extends SQLiteOpenHelper {
         myInput.close();
     }
 
-    public void openDataBase() throws SQLiteException{
+    public void openDatabase() throws SQLiteException{
         //Opens the database
         String myPath = DB_PATH + DB_NAME;
-        fantasticStoriesDataBase = SQLiteDatabase.openDatabase(myPath,null, SQLiteDatabase.OPEN_READONLY);
+        fantasticDatabase = SQLiteDatabase.openDatabase(myPath,null, SQLiteDatabase.OPEN_READONLY);
     }
 
     @Override
     public synchronized void close() {
-        if(fantasticStoriesDataBase != null)
-            fantasticStoriesDataBase.close();
         super.close();
+        if(fantasticDatabase != null)
+            fantasticDatabase.close();
     }
 
     @Override
@@ -133,10 +140,6 @@ public class DataBaseHelper extends SQLiteOpenHelper {
     @Override
     public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
     }
-
-    // Add your public helper methods to access and get content from the database.
-    // You could return cursors by doing "return myDataBase.query(....)" so it'd be easy
-    // to you to create adapters for your views.
 
     public boolean addReview (int rating, String reviewTitle, String reviewText) {
         //gets the time of creation of the review from the system and saves it as a string
@@ -156,25 +159,37 @@ public class DataBaseHelper extends SQLiteOpenHelper {
         if (result == -1){
             return false;
         } else{
-            Log.d(TAG, "addData: Adding rating " + rating + " title " + reviewTitle + " text "
-                    + reviewText + TABLE_NAME );
             return true;
         }
     }
 
     //gets all the data from the database
     public Cursor getallStoryData(){
-        SQLiteDatabase fantasticStoriesDataBase = this.getWritableDatabase();
         String query = "SELECT * FROM " + TABLE_NAME;
-        Cursor data = fantasticStoriesDataBase.rawQuery(query, null);
+        Cursor data = fantasticDatabase.rawQuery(query, null);
         return data;
     }
 
-    //gets the issue numbers from a specific year from the database
+    //gets the year from the database.
+    // Includes the _id column in the sqlite query for SimpleCursorAdapter to work properly
+    public Cursor getYear (){
+        String query = "SELECT " + ZERO_COLUMN_NAME + ", " + FIRST_COLUMN_NAME + " FROM " + TABLE_NAME
+                + " GROUP BY " + FIRST_COLUMN_NAME + " ORDER BY " + FIRST_COLUMN_NAME + " DESC";
+        Cursor data = fantasticDatabase.rawQuery(query, null);
+        return data;
+    }
+
+    // gets the issue numbers from a specific year from the database.
+    // Includes the _id column in the sqlite query for SimpleCursorAdapter to work properly
     public Cursor getIssueNumbers (String chosenYear){
-        SQLiteDatabase fantasticStoriesDataBase = this.getWritableDatabase();
-        String query = "SELECT " + SECOND_COLUMN_NAME + " FROM " + TABLE_NAME + " WHERE " + FIRST_COLUMN_NAME + " = " + chosenYear;
-        Cursor data = fantasticStoriesDataBase.rawQuery(query, null);
+        // if year is null, we get runtime exception, so to avoid it it sets year to current year
+        if(chosenYear != null){
+            int year = Calendar.getInstance().get(Calendar.YEAR);
+            chosenYear = Integer.toString(year);
+        }
+        String query = "SELECT " + ZERO_COLUMN_NAME + ", " + SECOND_COLUMN_NAME + " FROM " + TABLE_NAME + " WHERE "
+                + FIRST_COLUMN_NAME + " = " + chosenYear + " GROUP BY " + SECOND_COLUMN_NAME;
+        Cursor data = fantasticDatabase.rawQuery(query, null);
         return data;
     }
 }

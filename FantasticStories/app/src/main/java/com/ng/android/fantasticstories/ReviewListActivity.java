@@ -11,7 +11,7 @@ import android.widget.ListView;
 import java.util.ArrayList;
 
 public class ReviewListActivity extends AppCompatActivity {
-//    DataBaseHelper dataBaseHelper;
+//    DatabaseHelper dataBaseHelper;
 //    private ListView reviewListView;
 //
 //    @Override
@@ -19,7 +19,7 @@ public class ReviewListActivity extends AppCompatActivity {
 //        super.onCreate(savedInstanceState);
 //        setContentView(R.layout.issue_list_layout);
 //
-//        dataBaseHelper = new DataBaseHelper(this);
+//        dataBaseHelper = new DatabaseHelper(this);
 //        reviewListView = findViewById(R.id.list_view);
 //        populateListView();
 //    }
