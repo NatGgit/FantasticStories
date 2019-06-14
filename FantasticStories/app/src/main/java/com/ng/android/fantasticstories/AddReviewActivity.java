@@ -1,6 +1,7 @@
 package com.ng.android.fantasticstories;
 
 import android.content.Intent;
+import android.database.Cursor;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v7.app.AppCompatActivity;
@@ -22,37 +23,65 @@ public class AddReviewActivity extends AppCompatActivity implements AdapterView.
         super.onCreate(savedInstanceState);
         setContentView(R.layout.add_review_layout);
 
-        // This spinner uses the array of years from the app resources
-        Spinner chooseYearSpinner = findViewById(R.id.add_review_year_spinner);
-//        ArrayAdapter<CharSequence> yearSpinnerAdapter = ArrayAdapter.createFromResource(this,
-//                R.array.year_spinner_array, android.R.layout.simple_spinner_item);
+        // declares 3 spinners that use data from fantasticDatabase
+        final Spinner chooseYearSpinner = findViewById(R.id.add_review_year_spinner);
+        final Spinner chooseIssueSpinner = findViewById(R.id.add_review_issue_number_spinner);
+        final Spinner chooseStorySpinner = findViewById(R.id.add_review_title_and_author_spinner);
+
+        // uses the simple cursor adapter to populate the first spinner with the data from the
+        // "Year" column in database. Two arrays in adapter mean "from" and "to".
         SimpleCursorAdapter yearSpinnerAdapter = new SimpleCursorAdapter(AddReviewActivity.this, android.R.layout.simple_spinner_item,
                 databaseHelper.getYear(), new String[]{"Year"}, new int[]{android.R.id.text1}, 0 );
         // Specifies the layout to use when the list of choices appears
         yearSpinnerAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-        // Applies the adapter to the spinner
+        // Applies the adapter to the first spinner
         chooseYearSpinner.setAdapter(yearSpinnerAdapter);
-
-        // second spinner uses the issue numbers from a database query according to what year was
-        // chosen in the firs spinner
-        final Spinner chooseIssueSpinner = findViewById(R.id.add_review_issue_number_spinner);
-        //retrieves the choice from the first spinner as a String
-        String chosenYear = chooseYearSpinner.getSelectedItem().toString();
-        //uses the simple cursor adapter to populate the spinner with the data from the database.
-        SimpleCursorAdapter issueSpinnerAdapter = new SimpleCursorAdapter(AddReviewActivity.this, android.R.layout.simple_spinner_item,
-                databaseHelper.getIssueNumbers(chosenYear), new String[]{"Issue"}, new int[]{android.R.id.text1}, 0 );
-        // Specifies the layout to use when the list of choices appears
-        issueSpinnerAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-        // Applies the adapter to the spinner
-        chooseIssueSpinner.setAdapter(issueSpinnerAdapter);
-        // Applies the OnItemSelectedListener to the spinner
-       // chooseIssueSpinner.setOnItemSelectedListener(this);
 
         // Applies the OnItemSelectedListener to the first spinner
         chooseYearSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
             public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
-                chooseIssueSpinner.setSelection(position);
+                //retrieves the choice from the first spinner as a String
+                Cursor yearFromDatabase = (Cursor) chooseYearSpinner.getSelectedItem();
+                String chosenYear = yearFromDatabase.getString(yearFromDatabase.getColumnIndex("Year"));
+                //uses the simple cursor adapter to populate the second spinner with the data from the database.
+                SimpleCursorAdapter issueSpinnerAdapter = new SimpleCursorAdapter(AddReviewActivity.this, android.R.layout.simple_spinner_item,
+                        databaseHelper.getIssueNumber(chosenYear), new String[]{"Issue"}, new int[]{android.R.id.text1}, 0 );
+                // Specifies the layout to use when the list of choices appears
+                issueSpinnerAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+                // Applies the adapter to the spinner
+                chooseIssueSpinner.setAdapter(issueSpinnerAdapter);
+                // Applies the OnItemSelectedListener to the spinner
+                 chooseIssueSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+                     @Override
+                     public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+                         //retrieves the choice from the second spinner as a String
+                         Cursor issueFromDatabase = (Cursor) chooseIssueSpinner.getSelectedItem();
+                         String chosenIssue = issueFromDatabase.getString(issueFromDatabase.getColumnIndex("Issue"));
+                         // checks if the story original language is Polish in order to determine if
+                         // there is a need for a simple or full layout. Full layout contains the additional
+                         // information about story original title
+                         if(databaseHelper.checkIfStoryLanguageIsPolish(chosenIssue)) {
+                             // uses custom spinner adapter with simpler layout for the row in spinner
+                             // for the stories originally in Polish
+                               StorySimpleSpinnerAdapter storySimpleSpinnerAdapter = new StorySimpleSpinnerAdapter(
+                                       AddReviewActivity.this, databaseHelper.getPolishStoryData(chosenIssue), 0);
+                             // Applies the adapter to the spinner
+                             chooseStorySpinner.setAdapter(storySimpleSpinnerAdapter);
+                         } else {
+                             // uses custom spinner adapter with full layout for the row in spinner
+                             // for the stories of foreign origin
+                             StoryFullSpinnerAdapter storyFullSpinnerAdapter = new StoryFullSpinnerAdapter(
+                                     AddReviewActivity.this, databaseHelper.getForeignStoryData(chosenIssue), 0);
+                             // Applies the adapter to the spinner
+                             chooseStorySpinner.setAdapter(storyFullSpinnerAdapter);
+                         }
+                     }
+
+                     @Override
+                     public void onNothingSelected(AdapterView<?> parent) {
+                     }
+                 });
             }
 
             @Override
@@ -70,18 +99,7 @@ public class AddReviewActivity extends AppCompatActivity implements AdapterView.
         ratingSpinnerAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         // Applies the adapter to the spinner
         ratingSpinner.setAdapter(ratingSpinnerAdapter);
-        // Applies the OnItemSelectedListener to the spinner
-       // ratingSpinner.setOnItemSelectedListener(this);
 
-        Spinner chooseStorySpinner = findViewById(R.id.add_review_title_and_author_spinner);
-        ArrayAdapter<CharSequence> storySpinnerAdapter = ArrayAdapter.createFromResource(this,
-                R.array.year_spinner_array, android.R.layout.simple_spinner_item);
-        // Specifies the layout to use when the list of choices appears
-        storySpinnerAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-        // Applies the adapter to the spinner
-        chooseStorySpinner.setAdapter(storySpinnerAdapter);
-        // Applies the OnItemSelectedListener to the spinner
-       // chooseStorySpinner.setOnItemSelectedListener(this);
 
         final EditText reviewTitleEditText =  findViewById(R.id.add_review_review_title_edit_text);
 
@@ -124,7 +142,7 @@ public class AddReviewActivity extends AppCompatActivity implements AdapterView.
 
     // Allows spinner items to be clickable
     public void onItemSelected(AdapterView<?> parent, View view,
-                               int pos, long id) {
+                               int position, long id) {
         // An item was selected. You can retrieve the selected item using
         // parent.getItemAtPosition(pos)
     }

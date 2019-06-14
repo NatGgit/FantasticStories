@@ -12,7 +12,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.text.DateFormat;
-import java.time.Year;
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 
@@ -24,19 +24,19 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     private final Context context;
 
     // that's the list of columns in the table
-    private final String TABLE_NAME = "Reviews";
-    private final String ZERO_COLUMN_NAME = "_id";
-    private final String FIRST_COLUMN_NAME = "Year";
-    private final String SECOND_COLUMN_NAME = "Issue";
-    private final String THIRD_COLUMN_NAME = "StoryAuthorFirstName";
-    private final String FORTH_COLUMN_NAME = "StoryAuthorSurname";
-    private final String FIFTH_COLUMN_NAME = "StoryTitle";
-    private final String SIXTH_COLUMN_NAME = "StoryOriginalTitle";
-    private final String SEVENTH_COLUMN_NAME = "OriginalLanguage";
-    private final String EIGHTH_COLUMN_NAME = "Rating";
-    private final String NINTH_COLUMN_NAME = "ReviewCreationDate";
-    private final String TENTH_COLUMN_NAME = "ReviewTitle";
-    private final String ELEVENTH_COLUMN_NAME = "ReviewText";
+    final String REVIEWS_TABLE = "Reviews";
+    final String ID_COLUMN = "_id";
+    final String YEAR_COLUMN = "Year";
+    final String ISSUE_COLUMN = "Issue";
+    final String AUTHOR_NAME_COLUMN = "StoryAuthorFirstName";
+    final String AUTHOR_SURNAME_COLUMN = "StoryAuthorSurname";
+    final String TITLE_COLUMN = "StoryTitle";
+    final String ORIGINAL_TITLE_COLUMN = "StoryOriginalTitle";
+    final String ORIGINAL_LANGUAGE_COLUMN = "OriginalLanguage";
+    final String RATING_COLUMN = "Rating";
+    final String DATE_COLUMN = "ReviewCreationDate";
+    final String REVIEW_TITLE_COLUMN = "ReviewTitle";
+    final String REVIEW_TEXT_COLUMN = "ReviewText";
 
     /**
      * Constructor
@@ -149,11 +149,11 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 
         SQLiteDatabase fantasticStoriesDataBase = this.getWritableDatabase();
         ContentValues valuesToInsert = new ContentValues();
-        valuesToInsert.put(EIGHTH_COLUMN_NAME, rating);
-        valuesToInsert.put(NINTH_COLUMN_NAME, creationDateString);
-        valuesToInsert.put(TENTH_COLUMN_NAME, reviewTitle);
-        valuesToInsert.put(ELEVENTH_COLUMN_NAME, reviewText);
-        long result = fantasticStoriesDataBase.insert(TABLE_NAME,null, valuesToInsert);
+        valuesToInsert.put(RATING_COLUMN, rating);
+        valuesToInsert.put(DATE_COLUMN, creationDateString);
+        valuesToInsert.put(REVIEW_TITLE_COLUMN, reviewTitle);
+        valuesToInsert.put(REVIEW_TEXT_COLUMN, reviewText);
+        long result = fantasticStoriesDataBase.insert(REVIEWS_TABLE,null, valuesToInsert);
 
         // if data was inserted incorrectly it wil return -1
         if (result == -1){
@@ -163,32 +163,61 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         }
     }
 
-    //gets all the data from the database
-    public Cursor getallStoryData(){
-        String query = "SELECT * FROM " + TABLE_NAME;
-        Cursor data = fantasticDatabase.rawQuery(query, null);
-        return data;
-    }
-
-    //gets the year from the database.
+    // gets the list of years from the database.
     // Includes the _id column in the sqlite query for SimpleCursorAdapter to work properly
     public Cursor getYear (){
-        String query = "SELECT " + ZERO_COLUMN_NAME + ", " + FIRST_COLUMN_NAME + " FROM " + TABLE_NAME
-                + " GROUP BY " + FIRST_COLUMN_NAME + " ORDER BY " + FIRST_COLUMN_NAME + " DESC";
+        String query = "SELECT " + ID_COLUMN + ", " + YEAR_COLUMN + " FROM " + REVIEWS_TABLE
+                + " GROUP BY " + YEAR_COLUMN + " ORDER BY " + YEAR_COLUMN + " DESC";
         Cursor data = fantasticDatabase.rawQuery(query, null);
         return data;
     }
 
-    // gets the issue numbers from a specific year from the database.
+    // gets the list of issue numbers from a specific year from the database.
     // Includes the _id column in the sqlite query for SimpleCursorAdapter to work properly
-    public Cursor getIssueNumbers (String chosenYear){
-        // if year is null, we get runtime exception, so to avoid it it sets year to current year
-        if(chosenYear != null){
-            int year = Calendar.getInstance().get(Calendar.YEAR);
-            chosenYear = Integer.toString(year);
+    public Cursor getIssueNumber (String chosenYear){
+        String query = "SELECT " + ID_COLUMN + ", " + ISSUE_COLUMN + " FROM " + REVIEWS_TABLE + " WHERE "
+                + YEAR_COLUMN + " = " + chosenYear + " GROUP BY " + ISSUE_COLUMN + " ORDER BY "
+                + ISSUE_COLUMN + " DESC";
+        Cursor data = fantasticDatabase.rawQuery(query, null);
+        return data;
+    }
+
+    //Retrieves information from database about original language of stories in a chosen issue.
+    //If the language is Polish returns true
+    public boolean checkIfStoryLanguageIsPolish(String chosenIssue) {
+        String query = "SELECT " + ORIGINAL_LANGUAGE_COLUMN + " FROM " + REVIEWS_TABLE + " WHERE "
+                + ISSUE_COLUMN + " = " + "'" + chosenIssue + "'";
+        Cursor data = fantasticDatabase.rawQuery(query, null);
+        data.moveToFirst();
+        ArrayList<String> originalLanguages = new ArrayList<String>();
+        while (!data.isAfterLast()) {
+            originalLanguages.add(data.getString(data.getColumnIndex(ORIGINAL_LANGUAGE_COLUMN)));
+            data.moveToNext();
         }
-        String query = "SELECT " + ZERO_COLUMN_NAME + ", " + SECOND_COLUMN_NAME + " FROM " + TABLE_NAME + " WHERE "
-                + FIRST_COLUMN_NAME + " = " + chosenYear + " GROUP BY " + SECOND_COLUMN_NAME;
+        data.close();
+        String[] arrayOfOriginalLanguages = originalLanguages.toArray(new String[originalLanguages.size()]);
+        for (String chosenLanguage : arrayOfOriginalLanguages) {
+            if ("Polish".equals(chosenLanguage)) {
+                return true;
+            } else {
+                return false;
+            }
+        }
+        return false;
+    }
+
+    public Cursor getPolishStoryData (String chosenIssue){
+        String query = "SELECT " + ID_COLUMN + ", " + TITLE_COLUMN + ", " + AUTHOR_NAME_COLUMN + ", "
+                + AUTHOR_SURNAME_COLUMN + " FROM " + REVIEWS_TABLE + " WHERE " + ISSUE_COLUMN + " = "
+                + "'" + chosenIssue + "'";
+              Cursor data = fantasticDatabase.rawQuery(query, null);
+        return data;
+    }
+
+    public Cursor getForeignStoryData (String chosenIssue){
+        String query = "SELECT " + ID_COLUMN + ", " + TITLE_COLUMN + ", " + ORIGINAL_TITLE_COLUMN + ", " + AUTHOR_NAME_COLUMN + ", "
+                + AUTHOR_SURNAME_COLUMN + " FROM " + REVIEWS_TABLE + " WHERE " + ISSUE_COLUMN + " = "
+                + "'" + chosenIssue + "'";
         Cursor data = fantasticDatabase.rawQuery(query, null);
         return data;
     }
