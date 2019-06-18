@@ -182,43 +182,46 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         return data;
     }
 
-    //Retrieves information from database about original language of stories in a chosen issue.
-    //If the language is Polish returns true
-    public boolean checkIfStoryLanguageIsPolish(String chosenIssue) {
+//    Retrieves information from database about original language of stories in a chosen issue in
+//    a form of an array list
+    public ArrayList getOriginalLanguages(String chosenIssue) {
         String query = "SELECT " + ORIGINAL_LANGUAGE_COLUMN + " FROM " + REVIEWS_TABLE + " WHERE "
                 + ISSUE_COLUMN + " = " + "'" + chosenIssue + "'";
         Cursor data = fantasticDatabase.rawQuery(query, null);
         data.moveToFirst();
-        ArrayList<String> originalLanguages = new ArrayList<String>();
+        ArrayList<String> originalLanguagesList = new ArrayList<>();
         while (!data.isAfterLast()) {
-            originalLanguages.add(data.getString(data.getColumnIndex(ORIGINAL_LANGUAGE_COLUMN)));
+            originalLanguagesList.add(data.getString(data.getColumnIndex(ORIGINAL_LANGUAGE_COLUMN)));
             data.moveToNext();
         }
         data.close();
-        String[] arrayOfOriginalLanguages = originalLanguages.toArray(new String[originalLanguages.size()]);
-        for (String chosenLanguage : arrayOfOriginalLanguages) {
+        return originalLanguagesList;
+    }
+
+    //I'm not sure if I'm doing this correctly
+    public Cursor getStoryData(ArrayList<String> originalLanguagesList, String chosenIssue){
+            for (String chosenLanguage : originalLanguagesList) {
             if ("Polish".equals(chosenLanguage)) {
-                return true;
+                String polishQuery = "SELECT " + ID_COLUMN + ", " + AUTHOR_NAME_COLUMN + ", " +
+                        AUTHOR_SURNAME_COLUMN+ ", " + TITLE_COLUMN + " FROM " + REVIEWS_TABLE + " WHERE "
+                        + ISSUE_COLUMN + " = " + "'" + chosenIssue + "'" + " AND " + ORIGINAL_LANGUAGE_COLUMN
+                        + " = 'Polish'";
+                        //+ " = " + "'" +  "Polish" + "'";
+                Cursor polishData = fantasticDatabase.rawQuery(polishQuery, null);
+                return polishData;
             } else {
-                return false;
+                String foreignQuery = "SELECT " + ID_COLUMN + ", " + AUTHOR_NAME_COLUMN + ", " +
+                        AUTHOR_SURNAME_COLUMN+ ", " + TITLE_COLUMN + ", " + ORIGINAL_TITLE_COLUMN +
+                        " FROM " + REVIEWS_TABLE + " WHERE " + ISSUE_COLUMN + " = " + "'" + chosenIssue + "'"
+                        + " AND " + ORIGINAL_LANGUAGE_COLUMN
+                        + " != 'Polish'";
+                        //" != " + "'" + "Polish" + "'";
+                Cursor foreignData = fantasticDatabase.rawQuery(foreignQuery, null);
+                return foreignData;
             }
         }
-        return false;
+        // I'm not sure if this is correct:
+        return null;
     }
 
-    public Cursor getPolishStoryData (String chosenIssue){
-        String query = "SELECT " + ID_COLUMN + ", " + TITLE_COLUMN + ", " + AUTHOR_NAME_COLUMN + ", "
-                + AUTHOR_SURNAME_COLUMN + " FROM " + REVIEWS_TABLE + " WHERE " + ISSUE_COLUMN + " = "
-                + "'" + chosenIssue + "'";
-              Cursor data = fantasticDatabase.rawQuery(query, null);
-        return data;
-    }
-
-    public Cursor getForeignStoryData (String chosenIssue){
-        String query = "SELECT " + ID_COLUMN + ", " + TITLE_COLUMN + ", " + ORIGINAL_TITLE_COLUMN + ", " + AUTHOR_NAME_COLUMN + ", "
-                + AUTHOR_SURNAME_COLUMN + " FROM " + REVIEWS_TABLE + " WHERE " + ISSUE_COLUMN + " = "
-                + "'" + chosenIssue + "'";
-        Cursor data = fantasticDatabase.rawQuery(query, null);
-        return data;
-    }
 }

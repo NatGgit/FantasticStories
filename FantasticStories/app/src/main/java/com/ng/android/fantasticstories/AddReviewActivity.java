@@ -15,8 +15,11 @@ import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import java.util.ArrayList;
+
 public class AddReviewActivity extends AppCompatActivity implements AdapterView.OnItemSelectedListener {
     DatabaseHelper databaseHelper = MainActivity.databaseHelper;
+    static ArrayList originalLanguagesList;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -58,24 +61,11 @@ public class AddReviewActivity extends AppCompatActivity implements AdapterView.
                          //retrieves the choice from the second spinner as a String
                          Cursor issueFromDatabase = (Cursor) chooseIssueSpinner.getSelectedItem();
                          String chosenIssue = issueFromDatabase.getString(issueFromDatabase.getColumnIndex("Issue"));
-                         // checks if the story original language is Polish in order to determine if
-                         // there is a need for a simple or full layout. Full layout contains the additional
-                         // information about story original title
-                         if(databaseHelper.checkIfStoryLanguageIsPolish(chosenIssue)) {
-                             // uses custom spinner adapter with simpler layout for the row in spinner
-                             // for the stories originally in Polish
-                               StorySimpleSpinnerAdapter storySimpleSpinnerAdapter = new StorySimpleSpinnerAdapter(
-                                       AddReviewActivity.this, databaseHelper.getPolishStoryData(chosenIssue), 0);
-                             // Applies the adapter to the spinner
-                             chooseStorySpinner.setAdapter(storySimpleSpinnerAdapter);
-                         } else {
-                             // uses custom spinner adapter with full layout for the row in spinner
-                             // for the stories of foreign origin
-                             StoryFullSpinnerAdapter storyFullSpinnerAdapter = new StoryFullSpinnerAdapter(
-                                     AddReviewActivity.this, databaseHelper.getForeignStoryData(chosenIssue), 0);
-                             // Applies the adapter to the spinner
-                             chooseStorySpinner.setAdapter(storyFullSpinnerAdapter);
-                         }
+                         //this list is a base of issue types in story spinner
+                         // but I'm not sure if I pass this info correctly to story spinner adapter
+                         originalLanguagesList = databaseHelper.getOriginalLanguages(chosenIssue);
+                         StorySpinnerAdapter storySpinnerAdapter = new StorySpinnerAdapter(AddReviewActivity.this, databaseHelper.getStoryData(originalLanguagesList, chosenIssue ), 0);
+                         chooseStorySpinner.setAdapter(storySpinnerAdapter);
                      }
 
                      @Override
