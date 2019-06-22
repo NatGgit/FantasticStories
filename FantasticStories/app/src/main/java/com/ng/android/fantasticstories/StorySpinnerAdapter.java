@@ -8,94 +8,40 @@ import android.view.ViewGroup;
 import android.widget.CursorAdapter;
 import android.widget.TextView;
 
-import java.util.ArrayList;
-
-
 public class StorySpinnerAdapter extends CursorAdapter {
     private LayoutInflater storySpinnerInflater;
     DatabaseHelper databaseHelper = MainActivity.databaseHelper;
 
-    //this arraylist should be populated each time the originalLAnguagesList is populated in AddReviewActivity
-    ArrayList originalLanguagesList = AddReviewActivity.originalLanguagesList;
-
-    public static final int TYPE_POLISH = 0;
-    public static final int TYPE_FOREIGN = 1;
-    public static final int NUMBER_OF_TYPES = 2;
-
     public StorySpinnerAdapter(Context context, Cursor c, int flags) {
         super(context, c, flags);
-        storySpinnerInflater = (LayoutInflater) context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
     }
 
     // creates new views based on the type of story language defined in original languages list
     @Override
     public View newView(Context context, Cursor cursor, ViewGroup parent) {
-        for (int i = 0; i <= getCount(); i++) {
-            if (getItemViewType(i) == 1) {
-                return storySpinnerInflater.inflate(R.layout.choose_story_spinner_row_full, parent, false);
-            } else {
-                return storySpinnerInflater.inflate(R.layout.choose_story_spinner_row_simple, parent, false);
-            }
-        }
-        //not sure if this return statement is correct
-        return null;
+        return LayoutInflater.from(context).inflate(R.layout.choose_story_spinner_row, parent, false);
     }
 
     //populates views with data from database
     @Override
     public void bindView(View view, Context context, Cursor cursor) {
-        for (int i = 0; i <= getCount(); i++) {
-            if (getItemViewType(i) == 1) {
-                TextView reviewTitleTextView = view.findViewById(R.id.spinner_full_review_title);
-                String reviewTitle = cursor.getString(cursor.getColumnIndex(databaseHelper.REVIEW_TITLE_COLUMN));
-                reviewTitleTextView.setText(reviewTitle);
+        TextView storyTitleTextView = view.findViewById(R.id.spinner_story_title_text_view);
+        String storyTitle = cursor.getString(cursor.getColumnIndexOrThrow(databaseHelper.STORY_TITLE_COLUMN));
+        storyTitleTextView.setText(storyTitle);
 
-                TextView reviewOriginalTitleTextView = view.findViewById(R.id.spinner_full_review_original_title);
-                String reviewOriginalTitle = cursor.getString(cursor.getColumnIndex(databaseHelper.ORIGINAL_TITLE_COLUMN));
-                reviewOriginalTitleTextView.setText(reviewOriginalTitle);
+        TextView storyOriginalTitleTextView = view.findViewById(R.id.spinner_original_title_text_view);
+        String storyOriginalTitle = cursor.getString(cursor.getColumnIndexOrThrow(databaseHelper.ORIGINAL_TITLE_COLUMN));
+        storyOriginalTitleTextView.setText(storyOriginalTitle);
 
-                TextView authorNameTextView = view.findViewById(R.id.spinner_full_authors_name_text_view);
-                String authorName = cursor.getString(cursor.getColumnIndex(databaseHelper.AUTHOR_NAME_COLUMN));
-                authorNameTextView.setText(authorName);
+        TextView authorNameTextView = view.findViewById(R.id.spinner_authors_name_text_view);
+        String authorName = cursor.getString(cursor.getColumnIndexOrThrow(databaseHelper.AUTHOR_NAME_COLUMN));
+        authorNameTextView.setText(authorName);
 
-                TextView authorSurnameTextView = view.findViewById(R.id.spinner_full_authors_surname_text_view);
-                String authorSurname = cursor.getString(cursor.getColumnIndex(databaseHelper.AUTHOR_SURNAME_COLUMN));
-                authorSurnameTextView.setText(authorSurname);
-            } else {
-                TextView reviewTitleTextView = view.findViewById(R.id.spinner_simple_review_title);
-                String reviewTitle = cursor.getString(cursor.getColumnIndex(databaseHelper.REVIEW_TITLE_COLUMN));
-                reviewTitleTextView.setText(reviewTitle);
+        TextView authorSurnameTextView = view.findViewById(R.id.spinner_authors_surname_text_view);
+        String authorSurname = cursor.getString(cursor.getColumnIndexOrThrow(databaseHelper.AUTHOR_SURNAME_COLUMN));
+        authorSurnameTextView.setText(authorSurname);
 
-                TextView authorNameTextView = view.findViewById(R.id.spinner_simple_authors_name_text_view);
-                String authorName = cursor.getString(cursor.getColumnIndex(databaseHelper.AUTHOR_NAME_COLUMN));
-                authorNameTextView.setText(authorName);
-
-                TextView authorSurnameTextView = view.findViewById(R.id.spinner_simple_authors_surname_text_view);
-                String authorSurname = cursor.getString(cursor.getColumnIndex(databaseHelper.AUTHOR_SURNAME_COLUMN));
-                authorSurnameTextView.setText(authorSurname);
-            }
-        }
+        View divider = view.findViewById(R.id.spinner_divider);
     }
 
-
-    @Override
-    public int getItemViewType(int position){
-        return originalLanguagesList.contains("Polish") ? TYPE_POLISH : TYPE_FOREIGN;
-    }
-
-    @Override
-    public int getViewTypeCount(){
-        return NUMBER_OF_TYPES;
-    }
-
-    @Override
-    public int getCount(){
-        return originalLanguagesList.size();
-    }
-
-
-    @Override
-    public long getItemId(int position){
-        return position;
-    }
 }

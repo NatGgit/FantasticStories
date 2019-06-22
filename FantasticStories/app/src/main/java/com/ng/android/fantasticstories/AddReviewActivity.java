@@ -19,7 +19,6 @@ import java.util.ArrayList;
 
 public class AddReviewActivity extends AppCompatActivity implements AdapterView.OnItemSelectedListener {
     DatabaseHelper databaseHelper = MainActivity.databaseHelper;
-    static ArrayList originalLanguagesList;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -61,13 +60,11 @@ public class AddReviewActivity extends AppCompatActivity implements AdapterView.
                          //retrieves the choice from the second spinner as a String
                          Cursor issueFromDatabase = (Cursor) chooseIssueSpinner.getSelectedItem();
                          String chosenIssue = issueFromDatabase.getString(issueFromDatabase.getColumnIndex("Issue"));
-                         //this list is a base of issue types in story spinner
-                         // but I'm not sure if I pass this info correctly to story spinner adapter
-                         originalLanguagesList = databaseHelper.getOriginalLanguages(chosenIssue);
-                         StorySpinnerAdapter storySpinnerAdapter = new StorySpinnerAdapter(AddReviewActivity.this, databaseHelper.getStoryData(originalLanguagesList, chosenIssue ), 0);
+                         //uses the custom cursor adapter to populate the second spinner with the data from the database.
+                         StorySpinnerAdapter storySpinnerAdapter = new StorySpinnerAdapter(AddReviewActivity.this, databaseHelper.getStoryData(chosenIssue), 0);
+                         // Applies the adapter to the spinner
                          chooseStorySpinner.setAdapter(storySpinnerAdapter);
                      }
-
                      @Override
                      public void onNothingSelected(AdapterView<?> parent) {
                      }
@@ -90,7 +87,6 @@ public class AddReviewActivity extends AppCompatActivity implements AdapterView.
         // Applies the adapter to the spinner
         ratingSpinner.setAdapter(ratingSpinnerAdapter);
 
-
         final EditText reviewTitleEditText =  findViewById(R.id.add_review_review_title_edit_text);
 
         final EditText reviewEditText = findViewById(R.id.add_review_edit_text);
@@ -100,13 +96,18 @@ public class AddReviewActivity extends AppCompatActivity implements AdapterView.
         saveButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
+                //collects unique info about selected story (title + author's surname) in order to pass it to addReview method
+                Cursor storyFromDatabase = (Cursor) chooseStorySpinner.getSelectedItem();
+                String chosenStoryTitle = storyFromDatabase.getString(storyFromDatabase.getColumnIndex("StoryTitle"));
+                Cursor authorFromDatabase = (Cursor) chooseStorySpinner.getSelectedItem();
+                String chosenAuthor = authorFromDatabase.getString(authorFromDatabase.getColumnIndex("StoryAuthorSurname"));
                 //collects data from 3 EditTexts as Strings
                 String newTitle = reviewTitleEditText.getText().toString();
                 String newReview = reviewEditText.getText().toString();
                 String newRating = ratingSpinner.getSelectedItem().toString();
                 int newRatingToInt = Integer.parseInt(newRating);
-                // saves data to the database by calling addReview method from DatabaseHelper class
-                boolean insertData = databaseHelper.addReview(newRatingToInt, newTitle, newReview);
+                // updates data in the database in the proper row by calling addReview method from DatabaseHelper class
+                boolean insertData = databaseHelper.addReview(chosenStoryTitle, chosenAuthor, newRatingToInt, newTitle, newReview);
                 //shows a short message (aka Toast) confirming that the review was saved
                 if (insertData) {
                     Toast.makeText(AddReviewActivity.this, "Your review has been saved",

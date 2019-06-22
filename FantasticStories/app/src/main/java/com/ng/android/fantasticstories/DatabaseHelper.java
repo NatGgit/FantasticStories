@@ -12,8 +12,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.text.DateFormat;
-import java.util.ArrayList;
-import java.util.Calendar;
 import java.util.Date;
 
 public class DatabaseHelper extends SQLiteOpenHelper {
@@ -30,9 +28,8 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     final String ISSUE_COLUMN = "Issue";
     final String AUTHOR_NAME_COLUMN = "StoryAuthorFirstName";
     final String AUTHOR_SURNAME_COLUMN = "StoryAuthorSurname";
-    final String TITLE_COLUMN = "StoryTitle";
+    final String STORY_TITLE_COLUMN = "StoryTitle";
     final String ORIGINAL_TITLE_COLUMN = "StoryOriginalTitle";
-    final String ORIGINAL_LANGUAGE_COLUMN = "OriginalLanguage";
     final String RATING_COLUMN = "Rating";
     final String DATE_COLUMN = "ReviewCreationDate";
     final String REVIEW_TITLE_COLUMN = "ReviewTitle";
@@ -141,19 +138,23 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
     }
 
-    public boolean addReview (int rating, String reviewTitle, String reviewText) {
+    public boolean addReview (String chosenStoryTitle, String chosenAuthor, int rating, String reviewTitle, String reviewText) {
         //gets the time of creation of the review from the system and saves it as a string
         Date creationDate = new Date();
         DateFormat dateFormat = DateFormat.getDateTimeInstance();
         String creationDateString = dateFormat.format(creationDate);
 
+        //creates pairs column name - value to insert
         SQLiteDatabase fantasticStoriesDataBase = this.getWritableDatabase();
         ContentValues valuesToInsert = new ContentValues();
         valuesToInsert.put(RATING_COLUMN, rating);
         valuesToInsert.put(DATE_COLUMN, creationDateString);
         valuesToInsert.put(REVIEW_TITLE_COLUMN, reviewTitle);
         valuesToInsert.put(REVIEW_TEXT_COLUMN, reviewText);
-        long result = fantasticStoriesDataBase.insert(REVIEWS_TABLE,null, valuesToInsert);
+
+        String whereClause = "WHERE " + STORY_TITLE_COLUMN + " = \"" + chosenStoryTitle + "\" AND "
+                + AUTHOR_SURNAME_COLUMN + " = \"" + chosenAuthor + "\"";
+        long result = fantasticStoriesDataBase.update(REVIEWS_TABLE, valuesToInsert, whereClause, null );
 
         // if data was inserted incorrectly it wil return -1
         if (result == -1){
@@ -176,52 +177,18 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     // Includes the _id column in the sqlite query for SimpleCursorAdapter to work properly
     public Cursor getIssueNumber (String chosenYear){
         String query = "SELECT " + ID_COLUMN + ", " + ISSUE_COLUMN + " FROM " + REVIEWS_TABLE + " WHERE "
-                + YEAR_COLUMN + " = " + chosenYear + " GROUP BY " + ISSUE_COLUMN + " ORDER BY "
+                + YEAR_COLUMN + " = \"" + chosenYear + "\" GROUP BY " + ISSUE_COLUMN + " ORDER BY "
                 + ISSUE_COLUMN + " DESC";
         Cursor data = fantasticDatabase.rawQuery(query, null);
         return data;
     }
 
-//    Retrieves information from database about original language of stories in a chosen issue in
-//    a form of an array list
-    public ArrayList getOriginalLanguages(String chosenIssue) {
-        String query = "SELECT " + ORIGINAL_LANGUAGE_COLUMN + " FROM " + REVIEWS_TABLE + " WHERE "
-                + ISSUE_COLUMN + " = " + "'" + chosenIssue + "'";
-        Cursor data = fantasticDatabase.rawQuery(query, null);
-        data.moveToFirst();
-        ArrayList<String> originalLanguagesList = new ArrayList<>();
-        while (!data.isAfterLast()) {
-            originalLanguagesList.add(data.getString(data.getColumnIndex(ORIGINAL_LANGUAGE_COLUMN)));
-            data.moveToNext();
-        }
-        data.close();
-        return originalLanguagesList;
+    // gets the list of stories (title, author's name and surname) from a specific issue from the database.
+    public Cursor getStoryData(String chosenIssue){
+           String query = "SELECT " + ID_COLUMN + ", " + STORY_TITLE_COLUMN + ", " + ORIGINAL_TITLE_COLUMN + ", " + AUTHOR_NAME_COLUMN + ", " +
+                        AUTHOR_SURNAME_COLUMN  + " FROM " + REVIEWS_TABLE + " WHERE "
+                        + ISSUE_COLUMN + " = \"" + chosenIssue + "\"";
+           Cursor data = fantasticDatabase.rawQuery(query, null);
+           return data;
     }
-
-    //I'm not sure if I'm doing this correctly
-    public Cursor getStoryData(ArrayList<String> originalLanguagesList, String chosenIssue){
-            for (String chosenLanguage : originalLanguagesList) {
-            if ("Polish".equals(chosenLanguage)) {
-                String polishQuery = "SELECT " + ID_COLUMN + ", " + AUTHOR_NAME_COLUMN + ", " +
-                        AUTHOR_SURNAME_COLUMN+ ", " + TITLE_COLUMN + " FROM " + REVIEWS_TABLE + " WHERE "
-                        + ISSUE_COLUMN + " = " + "'" + chosenIssue + "'" + " AND " + ORIGINAL_LANGUAGE_COLUMN
-                        + " = 'Polish'";
-                        //+ " = " + "'" +  "Polish" + "'";
-                Cursor polishData = fantasticDatabase.rawQuery(polishQuery, null);
-                return polishData;
-            } else {
-                String foreignQuery = "SELECT " + ID_COLUMN + ", " + AUTHOR_NAME_COLUMN + ", " +
-                        AUTHOR_SURNAME_COLUMN+ ", " + TITLE_COLUMN + ", " + ORIGINAL_TITLE_COLUMN +
-                        " FROM " + REVIEWS_TABLE + " WHERE " + ISSUE_COLUMN + " = " + "'" + chosenIssue + "'"
-                        + " AND " + ORIGINAL_LANGUAGE_COLUMN
-                        + " != 'Polish'";
-                        //" != " + "'" + "Polish" + "'";
-                Cursor foreignData = fantasticDatabase.rawQuery(foreignQuery, null);
-                return foreignData;
-            }
-        }
-        // I'm not sure if this is correct:
-        return null;
-    }
-
 }
