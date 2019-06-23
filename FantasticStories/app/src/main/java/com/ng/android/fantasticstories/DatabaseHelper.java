@@ -138,32 +138,6 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
     }
 
-    public boolean addReview (String chosenStoryTitle, String chosenAuthor, int rating, String reviewTitle, String reviewText) {
-        //gets the time of creation of the review from the system and saves it as a string
-        Date creationDate = new Date();
-        DateFormat dateFormat = DateFormat.getDateTimeInstance();
-        String creationDateString = dateFormat.format(creationDate);
-
-        //creates pairs column name - value to insert
-        SQLiteDatabase fantasticStoriesDataBase = this.getWritableDatabase();
-        ContentValues valuesToInsert = new ContentValues();
-        valuesToInsert.put(RATING_COLUMN, rating);
-        valuesToInsert.put(DATE_COLUMN, creationDateString);
-        valuesToInsert.put(REVIEW_TITLE_COLUMN, reviewTitle);
-        valuesToInsert.put(REVIEW_TEXT_COLUMN, reviewText);
-
-        String whereClause = "WHERE " + STORY_TITLE_COLUMN + " = \"" + chosenStoryTitle + "\" AND "
-                + AUTHOR_SURNAME_COLUMN + " = \"" + chosenAuthor + "\"";
-        long result = fantasticStoriesDataBase.update(REVIEWS_TABLE, valuesToInsert, whereClause, null );
-
-        // if data was inserted incorrectly it wil return -1
-        if (result == -1){
-            return false;
-        } else{
-            return true;
-        }
-    }
-
     // gets the list of years from the database.
     // Includes the _id column in the sqlite query for SimpleCursorAdapter to work properly
     public Cursor getYear (){
@@ -190,5 +164,31 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                         + ISSUE_COLUMN + " = \"" + chosenIssue + "\"";
            Cursor data = fantasticDatabase.rawQuery(query, null);
            return data;
+    }
+
+    public boolean addReview (String chosenStoryTitle, String chosenAuthor, int rating, String reviewTitle, String reviewText) {
+        //gets the time of creation of the review from the system and saves it as a string
+        Date creationDate = new Date();
+        DateFormat dateFormat = DateFormat.getDateTimeInstance();
+        String creationDateString = dateFormat.format(creationDate);
+
+        //creates pairs column name - value to insert
+        SQLiteDatabase fantasticStoriesDataBase = this.getWritableDatabase();
+        ContentValues valuesToInsert = new ContentValues();
+        valuesToInsert.put(RATING_COLUMN, rating);
+        valuesToInsert.put(DATE_COLUMN, creationDateString);
+        valuesToInsert.put(REVIEW_TITLE_COLUMN, reviewTitle);
+        valuesToInsert.put(REVIEW_TEXT_COLUMN, reviewText);
+
+        String whereClause = STORY_TITLE_COLUMN + " = \"" + chosenStoryTitle + "\" AND "
+                + AUTHOR_SURNAME_COLUMN + " = \"" + chosenAuthor + "\"";
+        long result = fantasticStoriesDataBase.update(REVIEWS_TABLE, valuesToInsert, whereClause, null );
+
+        // if data was inserted incorrectly it wil return -1
+        if (result == -1){
+            return false;
+        } else{
+            return true;
+        }
     }
 }
