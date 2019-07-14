@@ -83,7 +83,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         SQLiteDatabase fantasticDataBase = null;
         try{
             String myPath = DB_PATH + DB_NAME;
-            fantasticDataBase = SQLiteDatabase.openDatabase(myPath, null, SQLiteDatabase.OPEN_READONLY);
+            fantasticDataBase = SQLiteDatabase.openDatabase(myPath, null, SQLiteDatabase.OPEN_READWRITE);
         }catch(SQLiteException e){
             //database does't exist yet.
         }
@@ -120,7 +120,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     public void openDatabase() throws SQLiteException{
         //Opens the database
         String myPath = DB_PATH + DB_NAME;
-        fantasticDatabase = SQLiteDatabase.openDatabase(myPath,null, SQLiteDatabase.OPEN_READONLY);
+        fantasticDatabase = SQLiteDatabase.openDatabase(myPath,null, SQLiteDatabase.OPEN_READWRITE);
     }
 
     @Override

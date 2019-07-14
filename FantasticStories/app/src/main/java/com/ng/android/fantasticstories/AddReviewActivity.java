@@ -15,8 +15,6 @@ import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import java.util.ArrayList;
-
 public class AddReviewActivity extends AppCompatActivity implements AdapterView.OnItemSelectedListener {
     DatabaseHelper databaseHelper = MainActivity.databaseHelper;
 
