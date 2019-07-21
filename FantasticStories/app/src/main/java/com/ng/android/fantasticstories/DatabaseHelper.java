@@ -173,7 +173,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         String creationDateString = dateFormat.format(creationDate);
 
         //creates pairs column name - value to insert
-        SQLiteDatabase fantasticStoriesDataBase = this.getWritableDatabase();
+        SQLiteDatabase fantasticStoriesDataBase = this.fantasticDatabase;
         ContentValues valuesToInsert = new ContentValues();
         valuesToInsert.put(RATING_COLUMN, rating);
         valuesToInsert.put(DATE_COLUMN, creationDateString);
