@@ -1,0 +1,14 @@
+
+<TextView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/issue_list_third_level_text_view"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:gravity="center_vertical"
+    android:minHeight="?android:attr/listPreferredItemHeightSmall"
+    android:paddingLeft="50dp"
+    android:paddingStart="50dp"
+    android:paddingRight="10dp"
+    android:paddingEnd="10dp"
+    android:textAppearance="?android:attr/textAppearanceListItemSmall"
+    android:textColor="@color/colorPrimaryDark"
+    />

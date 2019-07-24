@@ -17,7 +17,8 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintVertical_bias="0.037"
-        android:background="@color/colorPrimaryLight" />
+        android:background="@color/colorPrimaryLight"
+        android:textColor="@color/colorPrimaryDark"/>
 
     <Spinner
         android:id="@+id/add_review_issue_number_spinner"
@@ -32,7 +33,8 @@
         app:layout_constraintStart_toEndOf="@id/add_review_year_spinner"
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintVertical_bias="1.0"
-        android:background="@color/colorPrimaryLight"/>
+        android:background="@color/colorPrimaryLight"
+        android:textColor="@color/colorPrimaryDark"/>
 
     <TextView
         android:id="@+id/add_review_rating_text_view"
@@ -45,12 +47,16 @@
         android:layout_marginRight="8dp"
         android:background="@color/colorPrimaryLight"
         android:text="@string/rating_text_view"
+        android:paddingLeft="4dp"
+        android:paddingStart="4dp"
+        android:paddingRight="4dp"
         android:textSize="14sp"
         android:gravity="center"
         app:layout_constraintStart_toEndOf="@+id/add_review_issue_number_spinner"
         app:layout_constraintLeft_toRightOf="@+id/add_review_issue_number_spinner"
         app:layout_constraintBottom_toTopOf="@+id/add_review_title_and_author_spinner"
-        app:layout_constraintTop_toTopOf="parent" />
+        app:layout_constraintTop_toTopOf="parent"
+        android:textColor="@color/colorPrimaryDark"/>
 
     <Spinner
         android:id="@+id/add_review_rating_spinner"
@@ -63,14 +69,13 @@
         android:layout_marginRight="8dp"
         android:layout_marginBottom="8dp"
         android:background="@color/colorPrimaryLight"
+        android:textColor="@color/colorPrimaryDark"
         app:layout_constraintBottom_toTopOf="@+id/add_review_title_and_author_spinner"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.0"
         app:layout_constraintStart_toEndOf="@+id/add_review_rating_text_view"
         app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintVertical_bias="0.0">
-
-    </Spinner>
+        app:layout_constraintVertical_bias="0.0"/>
 
     <Spinner
         android:id="@+id/add_review_title_and_author_spinner"
@@ -84,7 +89,8 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/add_review_year_spinner"
-        android:background="@color/colorPrimaryLight"/>
+        android:background="@color/colorPrimaryLight"
+        android:textColor="@color/colorPrimaryDark" />
 
     <EditText
         android:id="@+id/add_review_review_title_edit_text"
@@ -98,6 +104,10 @@
         android:background="@color/colorPrimaryLight"
         android:hint="@string/your_review_title_hint"
         android:textSize="14sp"
+        android:textColor="@color/colorPrimaryDark"
+        android:paddingLeft="4dp"
+        android:paddingStart="4dp"
+        android:paddingRight="4dp"
         android:importantForAutofill="no"
         android:inputType="textShortMessage"
         app:layout_constraintLeft_toLeftOf="parent"
@@ -117,6 +127,10 @@
         android:background="@color/colorPrimaryLight"
         android:hint="@string/your_review_hint"
         android:textSize="14sp"
+        android:textColor="@color/colorPrimaryDark"
+        android:paddingLeft="4dp"
+        android:paddingStart="4dp"
+        android:paddingRight="4dp"
         android:gravity="start"
         android:importantForAutofill="no"
         android:inputType="textMultiLine"
