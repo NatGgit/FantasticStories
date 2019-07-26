@@ -3,11 +3,10 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:showIn="@layout/activity_main"
     tools:context=".IssueListActivity">
 
     <ExpandableListView
-        android:id="@+id/expandableListView_Parent"
+        android:id="@+id/expandable_list_view_issue_list"
         android:layout_width="fill_parent"
         android:layout_height="fill_parent"
         android:groupIndicator="@null" />

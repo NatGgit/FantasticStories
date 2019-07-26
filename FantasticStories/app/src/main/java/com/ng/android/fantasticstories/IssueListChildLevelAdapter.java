@@ -1,7 +1,6 @@
 package com.ng.android.fantasticstories;
 
 import android.content.Context;
-import android.graphics.Color;
 import android.util.TypedValue;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -14,18 +13,18 @@ import java.util.Map;
 
 public class IssueListChildLevelAdapter extends BaseExpandableListAdapter
 {
-    private final Context mContext;
-    private final List<String> mListDataHeader;
-    private final Map<String, List<String>> mListDataChild;
-    public IssueListChildLevelAdapter    (Context mContext, List<String> mListDataHeader, Map<String, List<String>> mListDataChild) {
-        this.mContext = mContext;
-        this.mListDataHeader = mListDataHeader;
-        this.mListDataChild = mListDataChild;
+    private final Context context;
+    private final List<String> secondLevelList;
+    private final Map<String, List<String>> thirdLevelMap;
+    public IssueListChildLevelAdapter    (Context context, List<String> secondLevelList, Map<String, List<String>> thirdLevelMap) {
+        this.context = context;
+        this.secondLevelList = secondLevelList;
+        this.thirdLevelMap = thirdLevelMap;
     }
     @Override
     public Object getChild(int groupPosition, int childPosition)
     {
-        return this.mListDataChild.get(this.mListDataHeader.get(groupPosition))
+        return this.thirdLevelMap.get(this.secondLevelList.get(groupPosition))
                 .get(childPosition);
     }
     @Override
@@ -40,21 +39,20 @@ public class IssueListChildLevelAdapter extends BaseExpandableListAdapter
         final String childText = (String) getChild(groupPosition, childPosition);
 
         if (convertView == null) {
-            LayoutInflater layoutInflater = (LayoutInflater) this.mContext
+            LayoutInflater layoutInflater = (LayoutInflater) this.context
                     .getSystemService(Context.LAYOUT_INFLATER_SERVICE);
             convertView = layoutInflater.inflate(R.layout.issue_list_third_level, parent, false);
         }
-        TextView txtListChild = (TextView) convertView
-                .findViewById(R.id.issue_list_third_level_text_view);
-        txtListChild.setTextSize(TypedValue.COMPLEX_UNIT_DIP, 15);
-        txtListChild.setText(childText);
+        TextView issueListThirdLevelTextView = convertView.findViewById(R.id.issue_list_third_level_text_view);
+        issueListThirdLevelTextView.setTextSize(TypedValue.COMPLEX_UNIT_DIP, 15);
+        issueListThirdLevelTextView.setText(childText);
         return convertView;
     }
     @Override
     public int getChildrenCount(int groupPosition)
     {
         try {
-            return this.mListDataChild.get(this.mListDataHeader.get(groupPosition)).size();
+            return this.thirdLevelMap.get(this.secondLevelList.get(groupPosition)).size();
         } catch (Exception e) {
             return 0;
         }
@@ -62,12 +60,12 @@ public class IssueListChildLevelAdapter extends BaseExpandableListAdapter
     @Override
     public Object getGroup(int groupPosition)
     {
-        return this.mListDataHeader.get(groupPosition);
+        return this.secondLevelList.get(groupPosition);
     }
     @Override
     public int getGroupCount()
     {
-        return this.mListDataHeader.size();
+        return this.secondLevelList.size();
     }
     @Override
     public long getGroupId(int groupPosition)
@@ -78,16 +76,15 @@ public class IssueListChildLevelAdapter extends BaseExpandableListAdapter
     public View getGroupView(int groupPosition, boolean isExpanded,
                              View convertView, ViewGroup parent)
     {
-        String headerTitle = (String) getGroup(groupPosition);
+        String secondLevelItem = (String) getGroup(groupPosition);
         if (convertView == null) {
-            LayoutInflater layoutInflater = (LayoutInflater) this.mContext
+            LayoutInflater layoutInflater = (LayoutInflater) this.context
                     .getSystemService(Context.LAYOUT_INFLATER_SERVICE);
             convertView = layoutInflater.inflate(R.layout.issue_list_second_level, parent, false);
         }
-        TextView lblListHeader = (TextView) convertView
-                .findViewById(R.id.issue_list_parent_level_text_view);
-        lblListHeader.setText(headerTitle);
-        lblListHeader.setTextSize(TypedValue.COMPLEX_UNIT_DIP, 18);
+        TextView issueListSecondLevelTextView = convertView.findViewById(R.id.issue_list_second_level_text_view);
+        issueListSecondLevelTextView.setText(secondLevelItem);
+        issueListSecondLevelTextView.setTextSize(TypedValue.COMPLEX_UNIT_DIP, 18);
         return convertView;
     }
     @Override

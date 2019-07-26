@@ -14,14 +14,15 @@ public class IssueListActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.issue_list_layout);
-        // Init top level data
-        List<String> listDataHeader = new ArrayList<>();
-        String[] mItemHeaders = getResources().getStringArray(R.array.items_array_expandable_level_one);
-        Collections.addAll(listDataHeader, mItemHeaders);
-        ExpandableListView mExpandableListView = findViewById(R.id.expandableListView_Parent);
-        if (mExpandableListView != null) {
-            IssueListParentLevelAdapter parentLevelAdapter = new IssueListParentLevelAdapter(this, listDataHeader);
-            mExpandableListView.setAdapter(parentLevelAdapter);
+        // creates an array list for first level of expandable list view and fills it with data from
+        // suitable array in string resources
+        List<String> firstLevelList = new ArrayList<>();
+        Collections.addAll(firstLevelList, getResources().getStringArray(R.array.items_array_expandable_level_one));
+        // sets an expandable list view with adapter for its first level
+        ExpandableListView issuesExpandableListView = findViewById(R.id.expandable_list_view_issue_list);
+        if (issuesExpandableListView != null) {
+            IssueListParentLevelAdapter parentLevelAdapter = new IssueListParentLevelAdapter(this, firstLevelList);
+            issuesExpandableListView.setAdapter(parentLevelAdapter);
         }
     }
 
